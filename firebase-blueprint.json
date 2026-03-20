@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "Workspace": {
+      "title": "Workspace",
+      "description": "A collaborative space for users.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "groupTimer": {
+          "type": "object",
+          "properties": {
+            "timeLeft": { "type": "number" },
+            "isRunning": { "type": "boolean" },
+            "lastUpdated": { "type": "string", "format": "date-time" }
+          }
+        }
+      },
+      "required": ["id", "name", "createdBy", "createdAt"]
+    },
+    "FocusSession": {
+      "title": "FocusSession",
+      "description": "A recorded focus session for a user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "workspaceId": { "type": "string" },
+        "duration": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "workspaceId", "duration", "timestamp"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile and presence data.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "currentWorkspaceId": { "type": "string" },
+        "lastActive": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["focusing", "resting", "chatting", "away"] },
+        "pomodoroTimeLeft": { "type": "number" },
+        "isTimerRunning": { "type": "boolean" }
+      },
+      "required": ["uid", "displayName", "email"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A chat message in a workspace.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "workspaceId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "workspaceId", "senderId", "senderName", "timestamp"]
+    },
+    "Todo": {
+      "title": "Todo",
+      "description": "A shared task in a workspace.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "workspaceId": { "type": "string" },
+        "text": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "createdBy": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "workspaceId", "text", "completed", "createdBy", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/workspaces/{workspaceId}": {
+      "schema": "Workspace",
+      "description": "Collection of workspaces."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and presence."
+    },
+    "/workspaces/{workspaceId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a workspace."
+    },
+    "/workspaces/{workspaceId}/todos/{todoId}": {
+      "schema": "Todo",
+      "description": "Shared todos within a workspace."
+    },
+    "/users/{userId}/focusSessions/{sessionId}": {
+      "schema": "FocusSession",
+      "description": "Individual focus sessions."
+    }
+  }
+}

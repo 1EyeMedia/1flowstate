@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: workspaces
+    // Fields: id, name, createdBy, createdAt
+    //
+    // Collection: users
+    // Fields: uid, displayName, email, photoURL, currentWorkspaceId, lastActive, status, pomodoroTimeLeft, isTimerRunning
+    //
+    // Collection: workspaces/{workspaceId}/messages
+    // Fields: id, workspaceId, senderId, senderName, text, imageUrl, timestamp
+    //
+    // Collection: workspaces/{workspaceId}/todos
+    // Fields: id, workspaceId, text, completed, createdBy, timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isWorkspaceMember(workspaceId) {
+      // For this app, any authenticated user can join a workspace by ID
+      // In a real app, we'd check a membership collection
+      return isAuthenticated();
+    }
+
+    function isValidWorkspace(data) {
+      return data.keys().hasAll(['id', 'name', 'createdBy', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.createdBy == request.auth.uid;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'email']) &&
+             data.uid == request.auth.uid &&
+             data.displayName is string && data.displayName.size() < 100 &&
+             data.email is string && data.email.size() < 100;
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['id', 'workspaceId', 'senderId', 'senderName', 'timestamp']) &&
+             data.senderId == request.auth.uid &&
+             data.text is string && data.text.size() < 5000;
+    }
+
+    function isValidTodo(data) {
+      return data.keys().hasAll(['id', 'workspaceId', 'text', 'completed', 'createdBy', 'timestamp']) &&
+             data.text is string && data.text.size() < 500;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(userId) && isValidUser(request.resource.data);
+
+      match /focusSessions/{sessionId} {
+        allow read: if isAuthenticated();
+        allow create: if isOwner(userId);
+      }
+    }
+
+    match /workspaces/{workspaceId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidWorkspace(request.resource.data);
+      allow update: if isAuthenticated(); // Allow any member to update group timer
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && isValidMessage(request.resource.data);
+      }
+
+      match /todos/{todoId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && isValidTodo(request.resource.data);
+        allow update: if isAuthenticated() && isValidTodo(request.resource.data);
+        allow delete: if isAuthenticated();
+      }
+    }
+  }
+}
