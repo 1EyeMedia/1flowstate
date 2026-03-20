@@ -1345,7 +1345,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
-  const [activeTab, setActiveTab] = useState<'flow' | 'team' | 'analytics'>('flow');
+  const [activeTab, setActiveTab] = useState<'focus' | 'tasks' | 'chat' | 'team' | 'analytics'>('focus');
   const [isMuted, setIsMuted] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
 
@@ -1476,16 +1476,28 @@ export default function App() {
 
           <nav className="space-y-4">
             <NavButton 
-              active={activeTab === 'flow'} 
-              onClick={() => setActiveTab('flow')} 
-              icon={<LayoutDashboard size={20} />} 
-              label="Flow Center" 
+              active={activeTab === 'focus'} 
+              onClick={() => setActiveTab('focus')} 
+              icon={<Timer size={20} />} 
+              label="Focus" 
+            />
+            <NavButton 
+              active={activeTab === 'tasks'} 
+              onClick={() => setActiveTab('tasks')} 
+              icon={<CheckSquare size={20} />} 
+              label="Tasks" 
+            />
+            <NavButton 
+              active={activeTab === 'chat'} 
+              onClick={() => setActiveTab('chat')} 
+              icon={<MessageSquare size={20} />} 
+              label="Chat" 
             />
             <NavButton 
               active={activeTab === 'team'} 
               onClick={() => setActiveTab('team')} 
               icon={<Layers size={20} />} 
-              label="Team Boards" 
+              label="Team" 
             />
             <NavButton 
               active={activeTab === 'analytics'} 
@@ -1542,7 +1554,7 @@ export default function App() {
                 </span>
                 <span className="text-white/20 text-xs font-bold">/</span>
                 <span className="text-white/40 text-xs font-bold uppercase tracking-widest">
-                  {activeTab === 'flow' ? 'Flow Center' : activeTab === 'team' ? 'Team Boards' : 'Analytics Dashboard'}
+                  {activeTab === 'focus' ? 'Focus Center' : activeTab === 'tasks' ? 'Task Board' : activeTab === 'chat' ? 'Team Chat' : activeTab === 'team' ? 'Team Boards' : 'Analytics Dashboard'}
                 </span>
               </div>
               <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
@@ -1561,40 +1573,62 @@ export default function App() {
 
           <div className="flex-1 relative z-20 overflow-hidden">
             <AnimatePresence mode="wait">
-              {activeTab === 'flow' && (
+              {activeTab === 'focus' && (
                 <motion.div 
-                  key="flow"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
+                  key="focus"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
                   className="h-full grid grid-cols-1 lg:grid-cols-12 gap-8 overflow-hidden"
                 >
-                  <div className="lg:col-span-4 flex flex-col gap-8 overflow-y-auto custom-scrollbar pr-2">
+                  <div className="lg:col-span-6 flex flex-col gap-8">
                     <Pomodoro user={user} workspaceId={currentWorkspace.id} isMuted={isMuted} />
                     <GroupTimer workspace={currentWorkspace} isMuted={isMuted} />
-                    <div className="flex-1 bg-white/5 backdrop-blur-3xl rounded-[40px] p-10 border border-white/10 shadow-2xl flex flex-col min-h-[400px]">
+                  </div>
+                  <div className="lg:col-span-6 flex flex-col gap-8">
+                    <div className="bg-white/5 backdrop-blur-3xl rounded-[40px] p-8 border border-white/10 shadow-2xl h-full flex flex-col">
+                      <h3 className="text-white font-black text-xl mb-6 flex items-center gap-3">
+                        <CheckSquare size={24} className="text-emerald-500" /> Your Personal Focus
+                      </h3>
+                      <TodoList workspaceId={currentWorkspace.id} userId={user.uid} isMuted={isMuted} isPersonal={true} />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'tasks' && (
+                <motion.div 
+                  key="tasks"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="h-full grid grid-cols-1 lg:grid-cols-12 gap-8 overflow-hidden"
+                >
+                  <div className="lg:col-span-8 flex flex-col gap-8 h-full">
+                    <div className="flex-1 bg-white/5 backdrop-blur-3xl rounded-[40px] p-10 border border-white/10 shadow-2xl flex flex-col">
                       <h3 className="text-white font-black text-xl mb-8 flex items-center gap-3">
                         <Target size={24} className="text-indigo-500" /> Shared Tasks
                       </h3>
                       <TodoList workspaceId={currentWorkspace.id} userId={user.uid} isMuted={isMuted} />
                     </div>
                   </div>
-                  <div className="lg:col-span-8 flex flex-col gap-8 overflow-hidden h-full">
-                    <div className="flex-1">
-                      <Chat workspaceId={currentWorkspace.id} user={user} isMuted={isMuted} />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="bg-white/5 backdrop-blur-3xl rounded-[40px] p-8 border border-white/10 shadow-2xl h-80 flex flex-col">
-                        <h3 className="text-white font-black text-xl mb-6 flex items-center gap-3">
-                          <CheckSquare size={24} className="text-emerald-500" /> Your Personal Focus
-                        </h3>
-                        <TodoList workspaceId={currentWorkspace.id} userId={user.uid} isMuted={isMuted} isPersonal={true} />
-                      </div>
-                      <div className="bg-white/5 backdrop-blur-3xl rounded-[40px] p-8 border border-white/10 shadow-2xl h-80 overflow-y-auto custom-scrollbar">
-                        <TeamFocus workspaceId={currentWorkspace.id} />
-                      </div>
+                  <div className="lg:col-span-4 flex flex-col gap-8">
+                    <div className="bg-white/5 backdrop-blur-3xl rounded-[40px] p-8 border border-white/10 shadow-2xl h-full overflow-y-auto custom-scrollbar">
+                      <TeamFocus workspaceId={currentWorkspace.id} />
                     </div>
                   </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'chat' && (
+                <motion.div 
+                  key="chat"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="h-full"
+                >
+                  <Chat workspaceId={currentWorkspace.id} user={user} isMuted={isMuted} />
                 </motion.div>
               )}
 
