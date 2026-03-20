@@ -10,6 +10,8 @@ export interface User {
   status: 'focusing' | 'resting' | 'chatting' | 'away';
   pomodoroTimeLeft?: number;
   isTimerRunning?: boolean;
+  totalFocusTime?: number;
+  totalSessions?: number;
 }
 
 export interface Workspace {
@@ -30,6 +32,8 @@ export interface FocusSession {
   workspaceId: string;
   duration: number;
   timestamp: Timestamp | string;
+  type: 'individual' | 'group';
+  completedTasks?: string[];
 }
 
 export interface Message {

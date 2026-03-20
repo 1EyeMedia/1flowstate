@@ -29,9 +29,11 @@
         "userId": { "type": "string" },
         "workspaceId": { "type": "string" },
         "duration": { "type": "number" },
-        "timestamp": { "type": "string", "format": "date-time" }
+        "timestamp": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["individual", "group"] },
+        "completedTasks": { "type": "array", "items": { "type": "string" } }
       },
-      "required": ["id", "userId", "workspaceId", "duration", "timestamp"]
+      "required": ["id", "userId", "workspaceId", "duration", "timestamp", "type"]
     },
     "User": {
       "title": "User",
@@ -100,6 +102,10 @@
     "/users/{userId}/focusSessions/{sessionId}": {
       "schema": "FocusSession",
       "description": "Individual focus sessions."
+    },
+    "/workspaces/{workspaceId}/personalTodos/{todoId}": {
+      "schema": "Todo",
+      "description": "Personal todos within a workspace, visible to others."
     }
   }
 }
